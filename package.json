@@ -1,0 +1,29 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "bamazon cli application",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "bamazon test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ian-Maynard/Bamazon.git"
+  },
+  "keywords": [
+    "mysql",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Ian Maynard",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ian-Maynard/Bamazon/issues"
+  },
+  "homepage": "https://github.com/Ian-Maynard/Bamazon#readme",
+  "dependencies": {
+    "easy-table": "^1.1.0",
+    "inquirer": "^3.0.6",
+    "mysql": "^2.13.0"
+  }
+}
