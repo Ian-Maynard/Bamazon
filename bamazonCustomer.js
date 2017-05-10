@@ -1,5 +1,5 @@
 var mysql = require("mysql");
-var mPrompt=require("inquirer");
+var menu=require("inquirer");
 var Table = require("easy-table");
 
 var connection = mysql.createConnection({
@@ -14,12 +14,55 @@ connection.connect(function(err) {
   console.log("connected as id " + connection.threadId);
 });
 
-function dispTable(){
-console.log('\x1Bc');
+function mainMenu() {
 
-connection.query("SELECT * FROM products", function(err, res){
+    var proMenu=true;
+
+    if (proMenu){
+
+        menu.prompt ([
+                 {
+                  type: "input",
+                  message: "Enter the item number: ",
+                  name: "itemNumber"
+                },
+                {
+                  type: "input",
+                  message: "Enter the item amount: ",
+                  name: "orderAmount"
+                },
+                {
+                  type: "input",
+                  message: "Is this correct? Y/N or enter Q to Quit",
+                  name: "continue"
+                }
+        ]).then(function(user) {
+          
+                if (user.continue=== 'Q'|| user.continue=== 'q') {
+                    proMenu=false;
+                    console.log("Exitting.....");
+                    return;
+                }
+
+                if (user.continue === 'N'|| user.continue=== 'n') {
+                   dispTable();
+                }
+
+                if (user.continue === 'Y'|| user.continue=== 'y') {
+                  processOrder(user.itemNumber,user.orderAmount);
+                  dispTable();
+                }
+                }); // Inquirer then
+          } // Pro Menu Boolean if 
+  } // Main Menu 
+
+
+function dispTable(){
+  process.stdout.write('\033c'); // Clear the screen
+  connection.query("SELECT * FROM products", function(err, res){
 			if(err) throw err;		
           	var t = new Table;
+            var tread = res;
             res.forEach(function(product){
             		t.cell('Item ID', product.item_id)
                     t.cell('Product Name', product.product_name)
@@ -28,59 +71,49 @@ connection.query("SELECT * FROM products", function(err, res){
                     t.newRow()
             }); 
             console.log(t.toString());
-            mainMenu();
+            mainMenu();    
     }); //connection.query
-
-
-
-
 }// End disPTable
 
 
-function mainMenu(){
+function processUpdate(itemNum,ordQty) {
+
+  connection.query('SELECT * FROM products WHERE item_id = ' + itemNum, function(err, res) { 
+      if(err) console.log(err);
 
 
-mPrompt.prompt([
-   {
-    type: "input",
-    message: "Enter the item number: ",
-    name: "itemNumber"
-  },
-
-  {
-    type: "input",
-    message: "Enter the item amount: ",
-    name: "orderAmount"
-  },
-
-  // Here we ask the user to confirm.
-  {
-    type: "input",
-    message: "Is this correct? Y/N or enter Q to Quit",
-    name: "continue"
-  }
-
-]).then(function(user) {
-
-  if (user.continue === 'y' ||  user.continue === 'Y') {
-    // Yes 
-
- 
-  }
-
-  else if (user.continue ===  'n' ||  user.continue === 'N'){
+      if (res[0].stock_quantity < ordQty || 0 < res[0].stock_quantity) {
+              menu.prompt ([
+                       {
+                        type: "confirm",
+                        message: "Only "+res[0].stock_quantity+" in stock. Order this amount? [y/n] : ",
+                        name: "yesOrno",
+                        default: true
+                       }
+                        ]).then(function(user) {
+                                if (user.confirm) {
+                                   processUpdate(itemNum,res[0].stock_quantity);
+                                  return;  
+                                   }   
+                                else return; 
+                        }
+          }  // Less than order quantity and greater than zero;
 
 
-  } //No 
+      if (res[0].stock_quantity === 0 ) {
+          console.log("ERROR Amount is Zero. Cannot continue");
+          return;
+      }
 
+      var updateQty = res[0].stock_quantity - ordQty;
+          connection.query("UPDATE products SET ? WHERE ?",
+          [{stock_quantity: updateQty}, {item_id: itemNum}],
+          function(err,res) {
+            if (err) throw err;
+          console.log("Order processed");
+          return;
+          });
 
-if (user.continue === 'q' || user.continue === 'Q' ) {
+  });// Process the Order. 
 
 }
-
-
-});
-} // Main Menu 
-
-dispTable();
-
