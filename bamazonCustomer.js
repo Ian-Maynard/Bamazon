@@ -9,6 +9,7 @@ var connection = mysql.createConnection({
   password: "MY4QLP244W31rd#",
   database: "Bamazon_db"
 });
+
 connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId);
@@ -36,6 +37,7 @@ function mainMenu() {
                   message: "Is this correct? Y/N or enter Q to Quit",
                   name: "continue"
                 }
+                
         ]).then(function(user) {
           
                 if (user.continue=== 'Q'|| user.continue=== 'q') {
@@ -64,11 +66,11 @@ function dispTable(){
           	var t = new Table;
             var tread = res;
             res.forEach(function(product){
-            		t.cell('Item ID', product.item_id)
-                    t.cell('Product Name', product.product_name)
-                    t.cell('Department ', product.department_name)
-                    t.cell('Price', product.price, Table.number(2))
-                    t.newRow()
+            		t.cell('Item ID', product.item_id);
+                    t.cell('Product Name', product.product_name);
+                    t.cell('Department ', product.department_name);
+                    t.cell('Price', product.price, Table.number(2));
+                    t.newRow();
             }); 
             console.log(t.toString());
             mainMenu();    
@@ -81,7 +83,6 @@ function processUpdate(itemNum,ordQty) {
   connection.query('SELECT * FROM products WHERE item_id = ' + itemNum, function(err, res) { 
       if(err) console.log(err);
 
-
       if (res[0].stock_quantity < ordQty || 0 < res[0].stock_quantity) {
               menu.prompt ([
                        {
@@ -93,14 +94,15 @@ function processUpdate(itemNum,ordQty) {
                         ]).then(function(user) {
                                 if (user.confirm) {
                                    processUpdate(itemNum,res[0].stock_quantity);
-                                  return;  
+                                    return;  
                                    }   
                                 else return; 
                         }
           }  // Less than order quantity and greater than zero;
 
 
-      if (res[0].stock_quantity === 0 ) {
+      if (res[0].stock_quantity === 0) {
+
           console.log("ERROR Amount is Zero. Cannot continue");
           return;
       }
@@ -109,11 +111,11 @@ function processUpdate(itemNum,ordQty) {
           connection.query("UPDATE products SET ? WHERE ?",
           [{stock_quantity: updateQty}, {item_id: itemNum}],
           function(err,res) {
-            if (err) throw err;
+            if (err)throw err;
           console.log("Order processed");
           return;
           });
 
   });// Process the Order. 
 
-}
+}  // Function 
